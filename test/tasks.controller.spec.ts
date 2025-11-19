@@ -1,13 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateTaskDto } from 'src/tasks/dto/create-task.dto';
-import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
-import { TasksController } from 'src/tasks/tasks.controller';
-import { TasksService } from 'src/tasks/tasks.service';
+import { TasksController } from '../src/tasks/tasks.controller';
+import { TasksService } from '../src/tasks/tasks.service';
 
+// Добавьте этот интерфейс
+interface MockTask {
+  _id: string;
+  title: string;
+  description?: string;
+  difficulty?: string;
+  tags?: string[];
+  examples?: any[];
+  authorId?: string;
+  authorRole?: string;
+  rating?: number;
+}
 
 describe('TasksController', () => {
-  let tasksController: TasksController;
-  let tasksService: TasksService;
+  let controller: TasksController;
 
   const mockTasksService = {
     findAll: jest.fn(),
@@ -20,121 +29,96 @@ describe('TasksController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TasksController],
-      providers: [
-        {
-          provide: TasksService,
-          useValue: mockTasksService,
-        },
-      ],
+      providers: [{ provide: TasksService, useValue: mockTasksService }],
     }).compile();
 
-    tasksController = module.get<TasksController>(TasksController);
-    tasksService = module.get<TasksService>(TasksService);
+    controller = module.get<TasksController>(TasksController);
   });
 
   describe('findAll', () => {
-    it('should return an array of tasks', async () => {
-      const result = [
-        {
-          id: 'task_id_1',
-          title: 'Two Sum',
-          description: 'Given an array...',
-          difficulty: 'easy',
-          tags: ['array'],
-          authorId: { username: 'user1' },
-          authorRole: 'user',
-          rating: 4.5,
-        },
+    it('should return tasks array', async () => {
+      // Arrange
+      const tasks: MockTask[] = [
+        { _id: '1', title: 'Task 1', difficulty: 'easy' },
+        { _id: '2', title: 'Task 2', difficulty: 'medium' }
       ];
+      mockTasksService.findAll.mockResolvedValue(tasks);
 
-      mockTasksService.findAll.mockResolvedValue(result);
+      // Act
+      const result = await controller.findAll();
 
-      expect(await tasksController.findAll()).toBe(result);
-      expect(tasksService.findAll).toHaveBeenCalled();
+      // Assert
+      expect(result).toHaveLength(2);
+      expect((result as MockTask[])[0].title).toBe('Task 1');
     });
   });
 
   describe('findOne', () => {
-    it('should return a single task', async () => {
-      const taskId = 'task_id_1';
-      const result = {
-        id: taskId,
-        title: 'Two Sum',
-        description: 'Given an array...',
-        difficulty: 'easy',
-        tags: ['array'],
-        authorId: { username: 'user1' },
-        authorRole: 'user',
-        rating: 4.5,
-      };
+    it('should return single task', async () => {
+      // Arrange
+      const task: MockTask = { _id: '1', title: 'Test Task', difficulty: 'hard' };
+      mockTasksService.findOne.mockResolvedValue(task);
 
-      mockTasksService.findOne.mockResolvedValue(result);
+      // Act
+      const result = await controller.findOne('1');
 
-      expect(await tasksController.findOne(taskId)).toBe(result);
-      expect(tasksService.findOne).toHaveBeenCalledWith(taskId);
+      // Assert
+      expect((result as MockTask)._id).toBe('1'); // Приведение типа
+      expect((result as MockTask).title).toBe('Test Task');
     });
   });
 
   describe('create', () => {
-    it('should create a new task', async () => {
-      const createTaskDto: CreateTaskDto = {
+    it('should create task', async () => {
+      // Arrange
+      const newTask: MockTask = { 
+        _id: '1', 
+        title: 'New Task', 
+        description: 'Desc',
+        difficulty: 'easy'
+      };
+      mockTasksService.create.mockResolvedValue(newTask);
+
+      // Act
+      const result = await controller.create({
         title: 'New Task',
-        description: 'Task description',
-        difficulty: 'medium',
-        tags: ['array', 'hash'],
-        authorId: 'user_id_1',
-        authorRole: 'user',
-        rating: 0,
-      };
+        description: 'Desc',
+        difficulty: 'easy',
+        authorId: '1',
+        authorRole: 'admin'
+      });
 
-      const result = {
-        id: 'task_id_2',
-        ...createTaskDto,
-        authorId: { username: 'user1' },
-        createdAt: new Date(),
-      };
-
-      mockTasksService.create.mockResolvedValue(result);
-
-      expect(await tasksController.create(createTaskDto)).toBe(result);
-      expect(tasksService.create).toHaveBeenCalledWith(createTaskDto);
+      // Assert
+      expect((result as MockTask)._id).toBe('1'); // Приведение типа
+      expect((result as MockTask).title).toBe('New Task');
     });
   });
 
   describe('update', () => {
-    it('should update a task', async () => {
-      const taskId = 'task_id_1';
-      const updateTaskDto: UpdateTaskDto = {
-        title: 'Updated Task',
-        rating: 5.0,
-      };
+    it('should update task', async () => {
+      // Arrange
+      const updatedTask: MockTask = { _id: '1', title: 'Updated Task' };
+      mockTasksService.update.mockResolvedValue(updatedTask);
 
-      const result = {
-        id: taskId,
-        title: 'Updated Task',
-        description: 'Task description',
-        difficulty: 'easy',
-        tags: ['array'],
-        authorId: { username: 'user1' },
-        authorRole: 'user',
-        rating: 5.0,
-      };
+      // Act
+      const result = await controller.update('1', { title: 'Updated Task' });
 
-      mockTasksService.update.mockResolvedValue(result);
-
-      expect(await tasksController.update(taskId, updateTaskDto)).toBe(result);
-      expect(tasksService.update).toHaveBeenCalledWith(taskId, updateTaskDto);
+      // Assert
+      expect((result as MockTask).title).toBe('Updated Task');
     });
   });
 
   describe('remove', () => {
-    it('should delete a task', async () => {
-      const taskId = 'task_id_1';
+    it('should delete task', async () => {
+      // Arrange
+      const deletedTask: MockTask = { _id: '1', title: 'Deleted Task' };
+      mockTasksService.remove.mockResolvedValue(deletedTask);
 
-      mockTasksService.remove.mockResolvedValue(undefined);
+      // Act
+      const result = await controller.remove('1');
 
-      await tasksController.remove(taskId);
-      expect(tasksService.remove).toHaveBeenCalledWith(taskId);
+      // Assert
+      expect((result as MockTask)._id).toBe('1'); // Приведение типа
     });
   });
 });

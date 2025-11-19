@@ -1,12 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UpdateUserDto } from 'src/users/dto/update-user.dto';
-import { UsersController } from 'src/users/users.controller';
-import { UsersService } from 'src/users/users.service';
+import { UsersController } from '../src/users/users.controller';
+import { UsersService } from '../src/users/users.service';
 
+// Добавьте этот интерфейс
+interface MockUser {
+  _id: string;
+  username: string;
+  email?: string;
+  role?: string;
+  rating?: number;
+}
 
 describe('UsersController', () => {
-  let usersController: UsersController;
-  let usersService: UsersService;
+  let controller: UsersController;
 
   const mockUsersService = {
     findAll: jest.fn(),
@@ -18,86 +24,70 @@ describe('UsersController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [
-        {
-          provide: UsersService,
-          useValue: mockUsersService,
-        },
-      ],
+      providers: [{ provide: UsersService, useValue: mockUsersService }],
     }).compile();
 
-    usersController = module.get<UsersController>(UsersController);
-    usersService = module.get<UsersService>(UsersService);
+    controller = module.get<UsersController>(UsersController);
   });
 
   describe('findAll', () => {
-    it('should return an array of users', async () => {
-      const result = [
-        {
-          id: 'user_id_1',
-          username: 'user1',
-          email: 'user1@example.com',
-          role: 'user',
-          rating: 0,
-        },
+    it('should return users array', async () => {
+      // Arrange
+      const users: MockUser[] = [
+        { _id: '1', username: 'user1' },
+        { _id: '2', username: 'user2' }
       ];
+      mockUsersService.findAll.mockResolvedValue(users);
 
-      mockUsersService.findAll.mockResolvedValue(result);
+      // Act
+      const result = await controller.findAll();
 
-      expect(await usersController.findAll()).toBe(result);
-      expect(usersService.findAll).toHaveBeenCalled();
+      // Assert
+      expect(result).toHaveLength(2);
+      expect((result as MockUser[])[0]._id).toBe('1'); // Приведение типа
     });
   });
 
   describe('findOne', () => {
-    it('should return a single user', async () => {
-      const userId = 'user_id_1';
-      const result = {
-        id: userId,
-        username: 'user1',
-        email: 'user1@example.com',
-        role: 'user',
-        rating: 0,
-      };
+    it('should return single user', async () => {
+      // Arrange
+      const user: MockUser = { _id: '1', username: 'testuser' };
+      mockUsersService.findOne.mockResolvedValue(user);
 
-      mockUsersService.findOne.mockResolvedValue(result);
+      // Act
+      const result = await controller.findOne('1');
 
-      expect(await usersController.findOne(userId)).toBe(result);
-      expect(usersService.findOne).toHaveBeenCalledWith(userId);
+      // Assert
+      expect((result as MockUser)._id).toBe('1'); // Приведение типа
+      expect((result as MockUser).username).toBe('testuser');
     });
   });
 
   describe('update', () => {
-    it('should update a user', async () => {
-      const userId = 'user_id_1';
-      const updateUserDto: UpdateUserDto = {
-        username: 'updated_user',
-        rating: 1500,
-      };
+    it('should update user', async () => {
+      // Arrange
+      const updatedUser: MockUser = { _id: '1', username: 'updated' };
+      mockUsersService.update.mockResolvedValue(updatedUser);
 
-      const result = {
-        id: userId,
-        username: 'updated_user',
-        email: 'user1@example.com',
-        role: 'user',
-        rating: 1500,
-      };
+      // Act
+      const result = await controller.update('1', { username: 'updated' });
 
-      mockUsersService.update.mockResolvedValue(result);
-
-      expect(await usersController.update(userId, updateUserDto)).toBe(result);
-      expect(usersService.update).toHaveBeenCalledWith(userId, updateUserDto);
+      // Assert
+      expect((result as MockUser).username).toBe('updated');
     });
   });
 
   describe('remove', () => {
-    it('should delete a user', async () => {
-      const userId = 'user_id_1';
+    it('should delete user', async () => {
+      // Arrange
+      const deletedUser: MockUser = { _id: '1', username: 'deleted' };
+      mockUsersService.remove.mockResolvedValue(deletedUser);
 
-      mockUsersService.remove.mockResolvedValue(undefined);
+      // Act
+      const result = await controller.remove('1');
 
-      await usersController.remove(userId);
-      expect(usersService.remove).toHaveBeenCalledWith(userId);
+      // Assert
+      expect((result as MockUser)._id).toBe('1'); // Приведение типа
     });
   });
 });

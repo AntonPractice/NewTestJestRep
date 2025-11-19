@@ -1,7 +1,7 @@
 import { TestingModule, Test } from "@nestjs/testing";
-import { AuthController } from "src/auth/auth.controller";
-import { AuthService } from "src/auth/auth.service";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
+import { AuthController } from "../src/auth/auth.controller";
+import { AuthService } from "../src/auth/auth.service";
+import { CreateUserDto } from "../src/users/dto/create-user.dto";
 
 
 describe('AuthController', () => {
