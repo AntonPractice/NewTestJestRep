@@ -12,14 +12,14 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({ summary: 'Все пользователи' })
   @ApiResponse({ status: 200, description: 'Return all users' })
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user by id' })
+  @ApiOperation({ summary: 'Пользователь по id' })
   @ApiResponse({ status: 200, description: 'Return user by id' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@Param('id') id: string) {
@@ -27,7 +27,7 @@ export class UsersController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update user' })
+  @ApiOperation({ summary: 'Обновления пользователя' })
   @ApiResponse({ status: 200, description: 'User updated' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
@@ -35,7 +35,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete user' })
+  @ApiOperation({ summary: 'Удаление пользователя' })
   @ApiResponse({ status: 200, description: 'User deleted' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async remove(@Param('id') id: string) {

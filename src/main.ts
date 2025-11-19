@@ -9,7 +9,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('LeetCode Clone API')
+    .setTitle('LeetCode  API')
     .setDescription('API для клона LeetCode с задачами по программированию')
     .setVersion('1.0')
     .addBearerAuth(
@@ -29,6 +29,6 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(3000);
-  console.log('🚀 Server working');
+  console.log('Server working');
 }
 bootstrap();

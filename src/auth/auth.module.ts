@@ -10,7 +10,6 @@ import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports: [
-    // Добавьте ConfigModule в imports
     ConfigModule.forRoot(),
     PassportModule,
     JwtModule.registerAsync({
